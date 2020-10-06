@@ -1,3 +1,1 @@
-Martín Rosolino\n
-Informática 2\n
-Trabajo Práctico N°2
+Martín Rosolino - Informática 2 - Trabajo Práctico N°2
