@@ -201,3 +201,94 @@ int main()
 
     return 0;
     }
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+     
+//Ejercicio 37 TP2 - Martín Rosolino
+
+#include <stdio.h>
+#include <stdlib.h>
+
+//Estructura archivo dado
+struct d
+    {
+    long clave;
+    char d[30];
+    unsigned char tipo;
+    char b;
+    }estructura;
+
+//Estructura base de la pila
+struct pila
+    {
+    long clave,posicion;
+    struct pila *lazo;
+    };
+
+//Prototipo de la funcion
+struct pila * funcion (long clave,struct pila *);
+
+//Descripcion de la funcion
+struct pila * funcion (long clave,struct pila *p)
+        {
+        int b=0,op=1;
+        long i=0;
+        struct pila *aux=NULL;
+        FILE *puntero;
+        puntero=fopen("datos.dat","rb");
+        fread(&estructura,sizeof(struct d),1,puntero);
+        while(!feof(puntero))
+            {
+            i++;
+            if(estructura.clave==clave)
+                {
+                if((estructura.tipo)&(1<<00010000))
+                    {
+                    aux=(struct pila *) malloc(sizeof(struct pila));
+                    aux->clave=estructura.clave;
+                    aux->posicion=i;
+                    aux->lazo=p;
+                    p=aux;
+                    }
+                b=1;
+                break;
+                }
+            fread(&estructura,sizeof(struct d),1,puntero);
+            }
+        if(b==0)
+            printf("Registro no encontrado\n");
+        return p;
+        }
+
+//Ciclo principal
+int main()
+    {
+    long id;
+    int op=1;
+    FILE *puntero;
+    struct pila *punter,*aux;
+    while(op==1)
+        {
+        printf("Clave: ");
+        scanf("%ld",&id);
+        punter=funcion(id,NULL);
+        printf("1 para seguir, otro para salir: ");
+        scanf("%d",&op);
+        }
+    puntero=fopen("datos.dat","rb");
+    fread(&estructura,sizeof(struct d),1,puntero);
+    while(!feof(puntero))
+        {
+        if(estructura.clave==punter->clave)
+            {
+            printf("%s\n",estructura.d);
+            aux=punter;
+            punter=punter->lazo;
+            }
+        fread(&estructura,sizeof(struct d),1,puntero);
+        }
+    return 0;
+    }
+ 
