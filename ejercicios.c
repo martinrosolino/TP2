@@ -291,4 +291,259 @@ int main()
         }
     return 0;
     }
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+            
+//Ejercicio 39 TP2 - Martín Rosolino
  
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct datos
+    {
+    char desc[60];
+    unsigned char potencia;
+    unsigned int estado;
+    int clave;
+    };
+
+struct lista
+    {
+    char desc[60];
+    unsigned char potencia;
+    unsigned int estado;
+    struct lista *sig,*ant;
+    };
+
+int main()
+    {
+    FILE *punter;
+    int i,op=1;
+    unsigned int ascii,pot;
+    char potencia;
+    struct datos hola;
+    struct lista *p,*r,*aux,*u;
+    hola.clave=0;
+
+    //Vacio fichero
+    punter=fopen("potencia.dat","wb");
+    fclose(punter);
+
+    //Inicializo punteros
+    p=r=aux=u=NULL;
+
+    while(op!=0)
+        {
+        //Carga de datos
+        printf("Descripcion: ");
+        scanf("%[^\n]",&hola.desc);
+        fflush(stdin);
+        printf("Potencia: ");
+        scanf("%c",&hola.potencia);
+        fflush(stdin);
+
+        //Obtengo el ascii de la primer letra de la desc
+        ascii=hola.desc[0];
+
+        //Asigno el id
+        hola.clave++;
+
+        //Obtengo el ascii de la potencia
+        pot=hola.potencia;
+
+        //Segun el ascii de la potencia le asigno su valor int
+        for(i=0;i<10;i++)
+            if(pot==48+i)
+                {
+                pot=i;
+                break;
+                }
+
+        //Asigno el valor correspondiente a hola.estado
+        hola.estado=ascii*pot;
+
+        //Reservo memoria
+        aux=(struct lista *)malloc(sizeof(struct lista));
+
+        //Si la lista está vacía
+        if(p==NULL)
+            {
+            p=u=aux;
+            aux->sig=NULL;
+            aux->ant=NULL;
+            }
+
+        //Si la lista contiene algún elemento
+        else
+            {
+            r=p;
+            while(1)
+                {
+                //El dato a ubicar está antes del primero
+                if(pot>p->potencia)
+                    {
+                    aux->sig=p;
+                    p->ant=aux;
+                    p=aux;
+                    break;
+                    }
+
+                //El dato a ubicar está en otro lugar
+                while(r->sig)
+                    if(pot<r->potencia)
+                        r=r->sig;
+                    else
+                        break;
+
+                //El dato se posicionó último
+                if(r==u)
+                    {
+                    u->sig=aux;
+                    aux->ant=u;
+                    u=aux;
+                    aux->sig=NULL;
+                    break;
+                    }
+
+                //El dato se posicionó en otro lugar
+                aux->sig=r->sig;
+                aux->ant=r;
+                r->sig=aux;
+                }
+            }
+
+        //Agrego al nuevo archivo
+        punter=fopen("potencia.dat","ab");
+        fwrite(&hola,sizeof(struct datos),1,punter);
+        fclose(punter);
+
+        //Salida
+        printf("0 para salir, otro para seguir: ");
+        scanf("%d",&op);
+        fflush(stdin);
+        }
+
+    //Asigno p a aux para recorrer desde el principio
+    aux=p;
+
+    //Si aux no es el último elemento lo imprime y avanza aux
+    while(aux)
+        {
+        printf("\n--------------------\nDescripcion: %s\nPotencia: %c\nEstado: %d\n--------------------\n",aux->desc,aux->potencia,aux->estado);
+        aux=aux->sig;
+        }
+
+    //Buenas practicas
+    free(aux);
+
+    return 0;
+    }
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+            
+//Ejercicio 40 TP2 - Martín Rosolino
+ 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct datos
+    {
+    char desc[60];
+    unsigned char potencia;
+    unsigned int estado;
+    int clave;
+    };
+
+struct pila
+    {
+    unsigned char potencia;
+    struct pila *lazo;
+    };
+
+char* extraeycambia (char desc[60])
+    {
+    int i;
+    char primera[60];
+
+    //Pasa letra por letra
+    for(i=0;i<strlen(desc);i++)
+        {
+        //Si es un espacio sale del ciclo
+        if (desc[i]==' ')
+            break;
+
+        //Mientras no sea un espacio va agregando letras
+        strcat(primera,desc[i]);
+        }
+
+    //Retorna la palabra invertida
+    return strrev(primera);
+    }
+
+
+void funcion (long int clave,struct pila *p)
+    {
+    struct pila *aux;
+    struct datos bf;
+    FILE *punter;
+
+    //Lee clave
+    printf("Clave: ");
+    scanf("%ld",&clave);
+
+    //Abre archivo
+    punter=fopen("potencia.dat","rb+");
+
+    //Mueve el cursor a la posicion indicada
+    fseek(punter,(long)sizeof(struct datos)*(clave-1),0);
+    fread(&bf,sizeof(struct datos),1,punter);
+
+    //Si coinciden las claves hace las tareas
+    if(bf.clave==clave)
+        {
+        //Imprime la primer palabra de la desc al reves
+        printf("%s",extraeycambia(bf.desc));
+
+        //Permuta el estado del bit 3 de estado
+        bf.estado=bf.estado^(0000000000001000);
+
+        //Mueve el cursor a la posicion adecuada
+        fseek(punter,(long)sizeof(struct datos)*(clave-1),0);
+
+        //Reescribe el archivo
+        fwrite(&bf,sizeof(struct datos),1,punter);
+
+        //Si los bits 0 y 2 estan prendidos hace las tareas
+        if(bf.estado&(1<<0000000000000101))
+            {
+            //Reserva lugar
+            aux=(struct pila *) malloc(sizeof(struct pila));
+
+            //Carga dato
+            strcpy(aux->potencia,bf.potencia);
+
+            //Asigna punteros
+            aux->lazo=p;
+            p=aux;
+            }
+        else
+            {
+            //Abre archivo salida
+            punter=fopen("salida.dat","ab");
+
+            //Escribe el archivo
+            fwrite(&bf,sizeof(struct datos),1,punter);
+            }
+        }
+    //Retorna p para poder ubicarse en el proximo ciclo
+    return p;
+    }
+
+
