@@ -1,3 +1,5 @@
+//Ejercicio 41 TP2 - Martín Rosolino
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
