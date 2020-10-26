@@ -20,22 +20,34 @@ struct pila
 
 char* extraeycambia (char desc[60])
     {
-    int i;
-    char primera[60];
+    int c;
+    char palabra[60],aux[10],*s,*i;
+
 
     //Pasa letra por letra
-    for(i=0;i<strlen(desc);i++)
+    for(c=0;c<strlen(desc);c++)
         {
         //Si es un espacio sale del ciclo
-        if (desc[i]==' ')
+        if (desc[c]==' ')
             break;
 
         //Mientras no sea un espacio va agregando letras
-        strcat(primera,desc[i]);
+        strcat(palabra,desc[c]);
+        }
+    s=&palabra[0];
+    i=aux;
+    while(*s)
+        s++;
+    s--;
+    while(s!=&palabra[0])
+        {
+        *i=*s;
+        i++;
+        *i=0;
         }
 
     //Retorna la palabra invertida
-    return strrev(primera);
+    return aux;
     }
 
 
@@ -95,4 +107,3 @@ struct pila * funcion (long int clave,struct pila *p)
     //Retorna p para poder ubicarse en el proximo ciclo
     return p;
     }
-
